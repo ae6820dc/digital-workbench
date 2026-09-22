@@ -1,45 +1,59 @@
 <!doctype html>
 <html lang="hu">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Digital Workbench</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f2937'/%3E%3Cpath d='M16 18h32v28H16z' fill='%23fff'/%3E%3Cpath d='M22 25h20M22 32h14M22 39h8' stroke='%231f2937' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='45' cy='43' r='7' fill='%23e76f51'/%3E%3C/svg%3E">
-<style>
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f3f4f6;color:#172033}
-header{background:#18202d;color:white;padding:34px 20px 30px}main{max-width:1050px;margin:auto}
-h1{margin:0;font-size:34px;letter-spacing:.3px}.sub{margin:7px 0 0;color:#cbd5e1}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;padding:24px 0 40px}
-.card{display:block;text-decoration:none;color:inherit;background:white;border:1px solid #e5e7eb;border-radius:18px;padding:21px;box-shadow:0 4px 14px #00000009;transition:.18s}
-.card:hover{transform:translateY(-3px);box-shadow:0 9px 25px #00000012}.icon{font-size:30px}.card h2{font-size:19px;margin:11px 0 6px}.card p{margin:0;color:#64748b;line-height:1.45;font-size:14px}
-footer{color:#94a3b8;text-align:center;padding:0 0 25px;font-size:13px}
-</style></head>
-<body><header><main><h1>🔧 Digital Workbench</h1><p class="sub">Egy digitális szerszámosláda apró, önálló programokkal.</p></main></header>
-<main><section class="grid">
-<a class="card" href="numbers/"><div class="icon">🔢</div><h2>Számvizsgáló</h2><p>Prím, páros, oszthatóság, számjegyek és további érdekességek.</p></a>
-<a class="card" href="unicode/"><div class="icon">🔤</div><h2>Unicode Explorer</h2><p>Karakterek, kódpontok és hexadecimális értékek felfedezése.</p></a>
-<a class="card" href="bits-bytes/"><div class="icon">💾</div><h2>Bit & Byte Lab</h2><p>Bit, byte, KB, MB, GB és bináris értékek közötti átváltás.</p></a>
-<a class="card" href="hz/"><div class="icon">🖥️</div><h2>Hz & Frame Time</h2><p>Frissítési frekvencia és képkockánkénti idő kiszámítása.</p></a>
-<a class="card" href="colors/"><div class="icon">🎨</div><h2>Color Lab</h2><p>HEX, RGB és HSL színek vizsgálata és átalakítása.</p></a>
-<a class="card" href="time/"><div class="icon">⏱️</div><h2>Time Lab</h2><p>Dátumok, időtartamok és Unix timestamp értékek.</p></a>
-<a class="card" href="developer/"><div class="icon">🧰</div><h2>Developer Tools</h2><p>JSON, Base64, URL-kódolás és egyéb webes segédeszközök.</p></a>
-<a class="card" href="random/"><div class="icon">🎲</div><h2>Random Lab</h2><p>Véletlen számok, választások és egyszerű sorsolások.</p></a>
-<a class="card" href="fractions/"><div class="icon">➗</div><h2>Fraction Lab</h2><p>Törtek egyszerűsítése, értéke és százalékos alakja.</p></a>
-<a class="card" href="bases/"><div class="icon">🔣</div><h2>Base Converter</h2><p>Bináris, oktális, decimális és hexadecimális számrendszerek.</p></a>
-<a class="card" href="primes/"><div class="icon">🧮</div><h2>Prime Lab</h2><p>Prímszámok keresése megadott határértékig.</p></a>
-<a class="card" href="perfect-hz/"><div class="icon">🎯</div><h2>Perfect Hz Finder</h2><p>Azok a frekvenciák, amelyeknél az 1/Hz véges tizedes.</p></a>
-<a class="card" href="pixel-depth/"><div class="icon">🟦</div><h2>Pixel Bit Depth</h2><p>Bitmélység, szintek és RGB színkombinációk.</p></a>
-<a class="card" href="timestamp/"><div class="icon">🕒</div><h2>Timestamp Lab</h2><p>Unix timestamp és dátumok közötti átváltás.</p></a>
-<a class="card" href="regex/"><div class="icon">🧪</div><h2>Regex Lab</h2><p>Reguláris kifejezések gyors tesztelése.</p></a>
-<a class="card" href="html-entities/"><div class="icon">🏷️</div><h2>HTML Entity Lab</h2><p>Karakterek numerikus HTML-entitássá alakítása.</p></a>
-<a class="card" href="math-visualizer/"><div class="icon">🧮</div><h2>Math Visualizer</h2><p>Matematikai függvények és görbék vizuális megjelenítése.</p></a>
-<a class="card" href="hash-lab/"><div class="icon">🔐</div><h2>Hash Lab</h2><p>SHA-256, SHA-384 és SHA-512 hash értékek számítása.</p></a>
-<a class="card" href="aspect-ratio-lab/"><div class="icon">📐</div><h2>Aspect Ratio Lab</h2><p>Képarányok, egyszerűsített arányok és méretek.</p></a>
-<a class="card" href="frequency-lab/"><div class="icon">🎛️</div><h2>Frequency Lab</h2><p>Frekvencia, periódusidő és hullám vizsgálata.</p></a>
-<a class="card" href="permutation-lab/"><div class="icon">🧩</div><h2>Permutation Lab</h2><p>Permutációk generálása és n! vizsgálata.</p></a>
-<a class="card" href="compression-simulator/"><div class="icon">🗜️</div><h2>Compression Simulator</h2><p>Egyszerű RLE tömörítés szemléltetése.</p></a>
-<a class="card" href="stopwatch-lab/"><div class="icon">🕐</div><h2>Stopwatch Lab</h2><p>Milliszekundumos stopper köridőkkel.</p></a>
-<a class="card" href="probability-lab/"><div class="icon">🎲</div><h2>Probability Lab</h2><p>Véletlen kísérletek és dobások statisztikája.</p></a>
-<a class="card" href="sequence-lab/"><div class="icon">🔢</div><h2>Sequence Lab</h2><p>Sorozatok különbségeinek és következő tagjának vizsgálata.</p></a>
-<a class="card" href="image-data-lab/"><div class="icon">🖼️</div><h2>Image Data Lab</h2><p>Képfelbontás, pixelek, fájlméret és képarány.</p></a>
-</section></main><footer>Digital Workbench · különálló kis kísérleti műhely</footer></body></html>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>📦 Repository index</title>
+  <style>
+    *{box-sizing:border-box} body{margin:0;background:#111827;color:#f3f4f6;font-family:Arial,sans-serif}
+    .wrap{max-width:1000px;margin:auto;padding:32px 20px}
+    h1{margin:0 0 8px} .path{color:#9ca3af;margin-bottom:20px}
+    button,.item{font-size:16px;border:0;border-radius:10px;padding:12px 14px}
+    button{background:#374151;color:white;cursor:pointer;margin-right:8px;margin-bottom:18px}
+    .list{display:grid;gap:8px} .item{display:block;background:#1f2937;color:#f3f4f6;text-decoration:none;cursor:pointer}
+    .item:hover{background:#374151} .folder{font-weight:700}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>📦 Repository</h1>
+    <div id="path" class="path">/</div>
+    <button onclick="goHome()">🏠 Főkönyvtár</button>
+    <button id="back" onclick="goBack()">⬅️ Vissza</button>
+    <div id="list" class="list"></div>
+  </div>
+  <script>
+    const tree = [{"name": "aspect-ratio-lab", "type": "dir", "children": [{"name": "aspect_ratio_lab.html", "type": "file"}]}, {"name": "bases", "type": "dir", "children": [{"name": "index.html", "type": "file"}]}, {"name": "bits-bytes", "type": "dir", "children": [{"name": "index.html", "type": "file"}]}, {"name": "colors", "type": "dir", "children": [{"name": "index.html", "type": "file"}]}, {"name": "compression-simulator", "type": "dir", "children": [{"name": "compression_simulator.html", "type": "file"}]}, {"name": "developer", "type": "dir", "children": [{"name": "index.html", "type": "file"}]}, {"name": "fractions", "type": "dir", "children": [{"name": "index.html", "type": "file"}]}, {"name": "frequency-lab", "type": "dir", "children": [{"name": "frequency_lab.html", "type": "file"}]}, {"name": "hash-lab", "type": "dir", "children": [{"name": "hash_lab.html", "type": "file"}]}, {"name": "html-entities", "type": "dir", "children": [{"name": "index.html", "type": "file"}]}, {"name": "hz", "type": "dir", "children": [{"name": "index.html", "type": "file"}]}, {"name": "image-data-lab", "type": "dir", "children": [{"name": "image_data_lab.html", "type": "file"}]}, {"name": "math-visualizer", "type": "dir", "children": [{"name": "math_visualizer.html", "type": "file"}]}, {"name": "numbers", "type": "dir", "children": [{"name": "index.html", "type": "file"}]}, {"name": "perfect-hz", "type": "dir", "children": [{"name": "index.html", "type": "file"}]}, {"name": "permutation-lab", "type": "dir", "children": [{"name": "permutation_lab.html", "type": "file"}]}, {"name": "pixel-depth", "type": "dir", "children": [{"name": "index.html", "type": "file"}]}, {"name": "primes", "type": "dir", "children": [{"name": "index.html", "type": "file"}]}, {"name": "probability-lab", "type": "dir", "children": [{"name": "probability_lab.html", "type": "file"}]}, {"name": "random", "type": "dir", "children": [{"name": "index.html", "type": "file"}]}, {"name": "regex", "type": "dir", "children": [{"name": "index.html", "type": "file"}]}, {"name": "sequence-lab", "type": "dir", "children": [{"name": "sequence_lab.html", "type": "file"}]}, {"name": "stopwatch-lab", "type": "dir", "children": [{"name": "stopwatch_lab.html", "type": "file"}]}, {"name": "time", "type": "dir", "children": [{"name": "index.html", "type": "file"}]}, {"name": "timestamp", "type": "dir", "children": [{"name": "index.html", "type": "file"}]}, {"name": "unicode", "type": "dir", "children": [{"name": "index.html", "type": "file"}]}];
+    let current = [];
+
+    function getItems(){
+      let items = tree;
+      for (const part of current) items = items.find(x => x.name === part).children;
+      return items;
+    }
+    function render(){
+      document.getElementById('path').textContent = '/' + current.join('/') + (current.length ? '/' : '');
+      document.getElementById('back').style.display = current.length ? 'inline-block' : 'none';
+      const list = document.getElementById('list');
+      list.innerHTML = '';
+      for (const item of getItems()){
+        const el = document.createElement('a');
+        el.className = 'item ' + (item.type === 'dir' ? 'folder' : '');
+        el.textContent = (item.type === 'dir' ? '📁 ' : '📄 ') + item.name;
+        if (item.type === 'dir') {
+          el.href = '#';
+          el.onclick = e => { e.preventDefault(); current.push(item.name); render(); };
+        } else {
+          const path = [...current, item.name].map(encodeURIComponent).join('/');
+          el.href = path;
+          el.target = '_blank';
+        }
+        list.appendChild(el);
+      }
+    }
+    function goHome(){ current = []; render(); }
+    function goBack(){ current.pop(); render(); }
+    render();
+  </script>
+</body>
+</html>
