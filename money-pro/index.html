@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<title>💰 Money Pro</title>
+<style>
+:root{--bg:#07101d;--panel:#101b2d;--panel2:#16243a;--text:#f5f7fb;--muted:#91a0b7;--line:#25344b;--blue:#4f8cff;--green:#2dd47a;--red:#ff5d6c;--yellow:#ffc857;--shadow:0 12px 35px rgba(0,0,0,.22)}
+*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:linear-gradient(180deg,#081221,#0b1422 55%,#07101d);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh}
+button,input,select{font:inherit}button{border:0}.app{max-width:760px;margin:auto;padding:18px 14px 105px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.brand{display:flex;align-items:center;gap:11px}.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#4f8cff,#7c5cff);display:grid;place-items:center;font-size:24px;box-shadow:0 8px 24px #0004}.brand h1{font-size:21px;margin:0}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}.iconbtn{width:42px;height:42px;border-radius:13px;background:var(--panel);color:var(--text);border:1px solid var(--line);cursor:pointer}
+.card{background:linear-gradient(145deg,#101c2f,#0e1929);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
+.hero{padding:19px;margin-bottom:14px;position:relative;overflow:hidden}.hero:after{content:"";position:absolute;width:170px;height:170px;border-radius:50%;right:-80px;top:-90px;background:#4f8cff18}.hero .label{color:var(--muted);font-size:12px}.balance{font-size:34px;font-weight:800;letter-spacing:-1px;margin:3px 0 13px}.heroRow{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mini{background:#ffffff08;border:1px solid #ffffff0d;border-radius:14px;padding:11px}.mini span{display:block;color:var(--muted);font-size:11px}.mini b{font-size:15px}.green{color:var(--green)}.red{color:var(--red)}
+.monthbar{display:flex;align-items:center;justify-content:space-between;margin:12px 2px}.monthbar button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:10px;width:38px;height:34px}.monthname{font-weight:700}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}.action{padding:14px;border-radius:16px;background:var(--panel);border:1px solid var(--line);color:var(--text);font-weight:700;cursor:pointer}.action.primary{background:linear-gradient(135deg,#4f8cff,#6a63ff);border:0}
+.section{margin:16px 0}.sectionTitle{display:flex;justify-content:space-between;align-items:center;margin:0 2px 9px}.sectionTitle h2{font-size:16px;margin:0}.sectionTitle span{color:var(--muted);font-size:12px}
+.tx{display:flex;align-items:center;gap:11px;padding:12px 13px;border-bottom:1px solid var(--line)}.tx:last-child{border-bottom:0}.txicon{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:#ffffff0b;font-size:19px;flex:0 0 auto}.txmain{min-width:0;flex:1}.txmain b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.txmain small{color:var(--muted);font-size:11px}.txamt{text-align:right;font-weight:800;font-size:13px}.txamt.in{color:var(--green)}.txamt.out{color:var(--red)}
+.empty{padding:25px;text-align:center;color:var(--muted);font-size:13px}
+.nav{position:fixed;z-index:20;left:50%;bottom:10px;transform:translateX(-50%);width:min(730px,calc(100% - 20px));background:#0d1828eF;backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:20px;display:grid;grid-template-columns:repeat(4,1fr);padding:6px;box-shadow:0 12px 40px #0007}.nav button{background:none;color:var(--muted);padding:8px 3px;border-radius:14px;font-size:10px}.nav button.active{background:#ffffff0d;color:#fff}.nav i{display:block;font-style:normal;font-size:20px;margin-bottom:2px}
+.view{display:none}.view.active{display:block}
+.form{padding:15px}.field{margin-bottom:11px}.field label{display:block;color:var(--muted);font-size:11px;margin:0 0 5px 2px}.field input,.field select{width:100%;background:#0a1423;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:12px;outline:none}.field input:focus,.field select:focus{border-color:var(--blue)}.twocol{display:grid;grid-template-columns:1fr 1fr;gap:9px}.type{display:grid;grid-template-columns:1fr 1fr;gap:8px}.type button{padding:11px;border-radius:11px;background:#0a1423;color:var(--muted);border:1px solid var(--line)}.type button.sel.in{background:#173d2b;color:var(--green);border-color:#2dd47a55}.type button.sel.out{background:#431d27;color:var(--red);border-color:#ff5d6c55}.submit{width:100%;padding:13px;border-radius:13px;background:var(--blue);color:white;font-weight:800;cursor:pointer;margin-top:3px}
+.filters{display:grid;grid-template-columns:1.2fr 1fr;gap:8px;margin-bottom:10px}.filters input,.filters select{width:100%;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:11px;padding:10px}
+.chart{padding:15px}.bars{height:150px;display:flex;align-items:end;gap:5px}.bar{flex:1;min-width:5px;background:linear-gradient(180deg,#6c7cff,#4f8cff);border-radius:5px 5px 2px 2px;position:relative}.bar span{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--muted)}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.stat{padding:13px;border-radius:15px;background:var(--panel);border:1px solid var(--line)}.stat small{display:block;color:var(--muted);font-size:10px}.stat b{display:block;margin-top:4px;font-size:16px}
+.budget{padding:13px;margin-bottom:9px}.budgetTop{display:flex;justify-content:space-between;font-size:13px}.progress{height:7px;background:#ffffff0c;border-radius:20px;overflow:hidden;margin-top:9px}.progress i{display:block;height:100%;background:var(--blue);border-radius:20px}.over i{background:var(--red)}
+.modal{position:fixed;inset:0;background:#0009;z-index:30;display:none;align-items:flex-end;justify-content:center;padding:10px}.modal.show{display:flex}.sheet{width:min(600px,100%);background:#101b2d;border:1px solid var(--line);border-radius:22px 22px 16px 16px;padding:17px;max-height:90vh;overflow:auto}.sheet h2{margin:0 0 13px;font-size:18px}.sheetActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.sheetActions button{padding:12px;border-radius:12px}.cancel{background:#ffffff0b;color:#fff}.danger{background:#5a1e2a;color:#ffb2bb}.toast{position:fixed;z-index:50;left:50%;bottom:88px;transform:translateX(-50%) translateY(20px);background:#f5f7fb;color:#07101d;padding:10px 15px;border-radius:12px;font-size:12px;font-weight:700;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(min-width:700px){.app{padding-top:28px}.actions{grid-template-columns:repeat(4,1fr)}.heroRow{grid-template-columns:repeat(2,1fr)}.modal{align-items:center}.sheet{border-radius:22px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand"><div class="logo">💰</div><div><h1>Money Pro</h1><small>személyes pénzügyi dashboard</small></div></div><button class="iconbtn" id="settingsBtn">⚙️</button></header>
+
+<div id="dashboard" class="view active">
+  <div class="monthbar"><button id="prevMonth">‹</button><div class="monthname" id="monthName"></div><button id="nextMonth">›</button></div>
+  <section class="card hero"><div class="label">Egyenleg · HUF</div><div class="balance" id="balance">0 Ft</div><div class="heroRow"><div class="mini"><span>Bevétel</span><b class="green" id="income">+0 Ft</b></div><div class="mini"><span>Kiadás</span><b class="red" id="expense">−0 Ft</b></div></div></section>
+  <div class="actions"><button class="action primary" id="quickIncome">＋ Bevétel</button><button class="action" id="quickExpense">− Kiadás</button><button class="action" id="openTx">📋 Tételek</button><button class="action" id="exportBtn">📤 Mentés</button></div>
+  <section class="section"><div class="sectionTitle"><h2>Utolsó tételek</h2><span id="txCount"></span></div><div class="card" id="recent"></div></section>
+  <section class="section"><div class="sectionTitle"><h2>Havi trend</h2><span>utolsó 6 hónap</span></div><div class="card chart"><div class="bars" id="bars"></div></div></section>
+</div>
+
+<div id="transactions" class="view">
+  <div class="sectionTitle"><h2>Tranzakciók</h2><span id="allCount"></span></div>
+  <div class="filters"><input id="search" placeholder="🔎 Keresés..."><select id="filterType"><option value="all">Minden típus</option><option value="income">Bevétel</option><option value="expense">Kiadás</option></select></div>
+  <div class="card" id="allTx"></div>
+</div>
+
+<div id="analytics" class="view">
+  <div class="sectionTitle"><h2>Elemzés</h2><span id="analysisMonth"></span></div>
+  <div class="statgrid"><div class="stat"><small>Átlagos kiadás</small><b id="avgExpense">0 Ft</b></div><div class="stat"><small>Legnagyobb kiadás</small><b id="maxExpense">0 Ft</b></div><div class="stat"><small>Bevételek száma</small><b id="incomeCount">0</b></div><div class="stat"><small>Kiadások száma</small><b id="expenseCount">0</b></div></div>
+  <section class="section"><div class="sectionTitle"><h2>Kiadások kategóriánként</h2></div><div class="card" id="categories"></div></section>
+</div>
+
+<div id="settings" class="view">
+  <div class="sectionTitle"><h2>Beállítások</h2></div>
+  <section class="card form">
+    <div class="field"><label>Alapértelmezett pénznem</label><select id="defaultCurrency"><option>HUF</option><option>EUR</option><option>USD</option><option>GBP</option><option>CHF</option></select></div>
+    <button class="submit" id="saveSettings">Beállítások mentése</button>
+  </section>
+  <section class="section"><div class="actions"><button class="action" id="importBtn">📥 Import JSON</button><button class="action" id="clearBtn">🗑️ Adatok törlése</button></div></section>
+  <div class="empty">A program helyben, a böngésző tárhelyén tárolja az adatokat. Az exportált JSON a biztonsági mentésed.</div>
+</div>
+
+<div class="nav"><button class="active" data-view="dashboard"><i>⌂</i>Főoldal</button><button data-view="transactions"><i>☷</i>Tételek</button><button data-view="analytics"><i>◔</i>Elemzés</button><button data-view="settings"><i>⚙</i>Beállítások</button></div>
+</div>
+
+<div class="modal" id="modal"><div class="sheet"><h2 id="modalTitle">Új tétel</h2><div class="field"><label>Megnevezés</label><input id="desc" placeholder="pl. Bevásárlás" autocomplete="off"></div><div class="twocol"><div class="field"><label>Összeg</label><input id="amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0"></div><div class="field"><label>Pénznem</label><select id="currency"><option>HUF</option><option>EUR</option><option>USD</option><option>GBP</option><option>CHF</option></select></div></div><div class="twocol"><div class="field"><label>Dátum</label><input id="date" type="date"></div><div class="field"><label>Kategória</label><select id="category"><option>Élelmiszer</option><option>Lakhatás</option><option>Közlekedés</option><option>Szórakozás</option><option>Vásárlás</option><option>Egészség</option><option>Munka</option><option>Számla</option><option>Egyéb</option></select></div></div><div class="field"><label>Típus</label><div class="type"><button id="incomeType" class="sel in">＋ Bevétel</button><button id="expenseType">− Kiadás</button></div></div><div class="sheetActions"><button class="cancel" id="cancelModal">Mégse</button><button class="submit" id="saveTx">Mentés</button></div></div></div>
+<div class="modal" id="importModal"><div class="sheet"><h2>📥 JSON import</h2><div class="field"><label>Fájl</label><input id="file" type="file" accept=".json,application/json"></div><div class="sheetActions"><button class="cancel" id="cancelImport">Mégse</button><button class="submit" id="doImport">Importálás</button></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY='money-pro-v1', SETTINGS='money-pro-settings-v1';
+const C={HUF:'Ft',EUR:'€',USD:'$',GBP:'£',CHF:'Fr'};
+const defaultData={transactions:[]};
+let data=JSON.parse(localStorage.getItem(KEY)||'null')||defaultData;
+let settings=JSON.parse(localStorage.getItem(SETTINGS)||'null')||{currency:'HUF'};
+let viewMonth=new Date(); viewMonth.setDate(1);
+let editType='income';
+const $=id=>document.getElementById(id);
+const money=(n,c='HUF')=>new Intl.NumberFormat('hu-HU',{maximumFractionDigits:c==='HUF'?0:2}).format(n)+' '+(C[c]||c);
+const dateStr=d=>{const x=new Date(d);return x.toISOString().slice(0,10)};
+const today=dateStr(new Date());
+function monthKey(d){return d.slice(0,7)}
+function monthLabel(d){return d.toLocaleDateString('hu-HU',{year:'numeric',month:'long'})}
+function showToast(s){$('toast').textContent=s;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1800)}
+function save(){localStorage.setItem(KEY,JSON.stringify(data));localStorage.setItem(SETTINGS,JSON.stringify(settings))}
+function txMonth(){return monthKey(dateStr(viewMonth))}
+function fmtDate(s){return new Date(s+'T12:00:00').toLocaleDateString('hu-HU',{month:'short',day:'numeric'})}
+function icon(cat,type){if(type==='income')return '💵';return ({'Élelmiszer':'🛒','Lakhatás':'🏠','Közlekedés':'🚗','Szórakozás':'🎮','Vásárlás':'🛍️','Egészség':'💊','Munka':'💼','Számla':'🧾','Egyéb':'•'})[cat]||'•'}
+function row(t){return '<div class="tx"><div class="txicon">'+icon(t.category,t.type)+'</div><div class="txmain"><b>'+esc(t.description)+'</b><small>'+fmtDate(t.date)+' · '+esc(t.category||'Egyéb')+'</small></div><div class="txamt '+(t.type==='income'?'in':'out')+'">'+(t.type==='income'?'+':'−')+money(t.amount,t.currency||'HUF')+'</div></div>'}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function render(){
+ $('monthName').textContent=monthLabel(viewMonth);$('analysisMonth').textContent=monthLabel(viewMonth);
+ const mk=txMonth(), ts=data.transactions.filter(t=>monthKey(t.date)===mk);
+ const inc=ts.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0), exp=ts.filter(t=>t.type==='expense').reduce((a,t)=>a+t.amount,0);
+ $('balance').textContent=money(inc-exp,'HUF');$('income').textContent='+'+money(inc,'HUF');$('expense').textContent='−'+money(exp,'HUF');
+ const sorted=[...ts].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);$('recent').innerHTML=sorted.slice(0,6).map(row).join('')||'<div class="empty">Ebben a hónapban még nincs tétel.</div>';$('txCount').textContent=ts.length+' tétel';
+ renderAll();renderAnalysis(ts);renderBars();
+}
+function renderAll(){
+ const q=$('search').value.toLowerCase(), f=$('filterType').value;
+ const arr=[...data.transactions].filter(t=>(f==='all'||t.type===f)&&((t.description+' '+(t.category||'')).toLowerCase().includes(q))).sort((a,b)=>b.date.localeCompare(a.date));
+ $('allCount').textContent=arr.length+' találat';
+ $('allTx').innerHTML=arr.map(row).join('')||'<div class="empty">Nincs találat.</div>';
+}
+function renderAnalysis(ts){
+ const ex=ts.filter(t=>t.type==='expense'), inc=ts.filter(t=>t.type==='income');
+ $('avgExpense').textContent=money(ex.length?ex.reduce((a,t)=>a+t.amount,0)/ex.length:0);
+ $('maxExpense').textContent=money(ex.length?Math.max(...ex.map(t=>t.amount)):0);
+ $('incomeCount').textContent=inc.length;$('expenseCount').textContent=ex.length;
+ const cats={};ex.forEach(t=>cats[t.category||'Egyéb']=(cats[t.category||'Egyéb']||0)+t.amount);
+ const vals=Object.entries(cats).sort((a,b)=>b[1]-a[1]), max=vals[0]?.[1]||1;
+ $('categories').innerHTML=vals.map(([k,v])=>'<div class="budget"><div class="budgetTop"><span>'+icon(k,'expense')+' '+esc(k)+'</span><b>'+money(v)+'</b></div><div class="progress"><i style="width:'+Math.min(100,v/max*100)+'%"></i></div></div>').join('')||'<div class="empty">Nincs kiadás ebben a hónapban.</div>';
+}
+function renderBars(){
+ const out=[];for(let i=5;i>=0;i--){const d=new Date(viewMonth);d.setMonth(d.getMonth()-i);const k=monthKey(dateStr(d));const v=data.transactions.filter(t=>monthKey(t.date)===k&&t.type==='expense').reduce((a,t)=>a+t.amount,0);out.push({d,v})}
+ const max=Math.max(...out.map(x=>x.v),1);$('bars').innerHTML=out.map(x=>'<div class="bar" title="'+money(x.v)+'" style="height:'+Math.max(4,x.v/max*125)+'px"><span>'+x.d.toLocaleDateString('hu-HU',{month:'short'}).replace('.','')+'</span></div>').join('');
+}
+function openModal(type){editType=type;$('modalTitle').textContent=type==='income'?'＋ Új bevétel':'− Új kiadás';$('incomeType').classList.toggle('sel',type==='income');$('expenseType').classList.toggle('sel',type==='expense');$('date').value=today;$('currency').value=settings.currency;$('desc').value='';$('amount').value='';$('modal').classList.add('show');setTimeout(()=>$('desc').focus(),50)}
+function switchView(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));$(v).classList.add('active');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));render()}
+$('quickIncome').onclick=()=>openModal('income');$('quickExpense').onclick=()=>openModal('expense');$('openTx').onclick=()=>switchView('transactions');
+$('cancelModal').onclick=()=>$('modal').classList.remove('show');$('incomeType').onclick=()=>{editType='income';$('incomeType').classList.add('sel');$('expenseType').classList.remove('sel')};$('expenseType').onclick=()=>{editType='expense';$('expenseType').classList.add('sel');$('incomeType').classList.remove('sel')};
+$('saveTx').onclick=()=>{const desc=$('desc').value.trim(),amount=Number($('amount').value),date=$('date').value;if(!desc||!amount||amount<0||!date){showToast('⚠️ Tölts ki minden mezőt');return}data.transactions.push({id:Date.now(),description:desc,amount,currency:$('currency').value,type:editType,date,category:$('category').value});save();$('modal').classList.remove('show');render();showToast('✓ Tétel elmentve')};
+$('prevMonth').onclick=()=>{viewMonth.setMonth(viewMonth.getMonth()-1);render()};$('nextMonth').onclick=()=>{viewMonth.setMonth(viewMonth.getMonth()+1);render()};
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
+$('search').oninput=renderAll;$('filterType').onchange=renderAll;
+$('settingsBtn').onclick=()=>switchView('settings');
+$('saveSettings').onclick=()=>{settings.currency=$('defaultCurrency').value;save();showToast('✓ Beállítások mentve');render()};
+$('defaultCurrency').value=settings.currency;
+$('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify({version:3,exported:new Date().toISOString(),transactions:data.transactions},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='money-pro-'+today+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500);showToast('✓ Mentés elkészült')};
+$('importBtn').onclick=()=>{$('file').value='';$('importModal').classList.add('show')};$('cancelImport').onclick=()=>$('importModal').classList.remove('show');
+$('doImport').onclick=()=>{const f=$('file').files[0];if(!f){showToast('⚠️ Válassz JSON fájlt');return}const r=new FileReader();r.onload=()=>{try{const p=JSON.parse(r.result),arr=Array.isArray(p)?p:p.transactions;if(!Array.isArray(arr))throw Error();const clean=arr.filter(t=>t&&t.description&&Number(t.amount)>0&&(t.type==='income'||t.type==='expense')&&t.date).map(t=>({id:t.id||Date.now()+Math.random(),description:String(t.description),amount:Number(t.amount),currency:C[t.currency]?t.currency:'HUF',type:t.type,date:t.date,category:t.category||'Egyéb'}));if(!clean.length)throw Error();data.transactions=clean;save();$('importModal').classList.remove('show');render();showToast('✓ '+clean.length+' tétel importálva')}catch(e){showToast('❌ Érvénytelen JSON')}};r.readAsText(f)};
+$('clearBtn').onclick=()=>{if(confirm('Biztosan törlöd az összes Money Pro adatot?')){data=defaultData;save();render();showToast('Adatok törölve')}};
+render();
+</script>
+</body>
+</html>
