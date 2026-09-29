@@ -92,7 +92,7 @@ function row(t){return '<div class="tx"><div class="txicon">'+icon(t.category,t.
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function render(){
  $('monthName').textContent=monthLabel(viewMonth);$('analysisMonth').textContent=monthLabel(viewMonth);$('currencyLabel').textContent=settings.currency||'HUF';
- const mk=txMonth(), ts=data.transactions.filter(t=>monthKey(t.date)===mk);
+ const mk=txMonth(), cur=settings.currency||'HUF', ts=data.transactions.filter(t=>monthKey(t.date)===mk&&(t.currency||'HUF')===cur), curTs=ts;
  const inc=ts.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0), exp=ts.filter(t=>t.type==='expense').reduce((a,t)=>a+t.amount,0);
  $('balance').textContent=money(inc-exp,cur);$('income').textContent='+'+money(inc,cur);$('expense').textContent='−'+money(exp,cur);
  const sorted=[...ts].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);$('recent').innerHTML=sorted.slice(0,6).map(row).join('')||'<div class="empty">Ebben a hónapban még nincs tétel.</div>';$('txCount').textContent=ts.length+' tétel';
