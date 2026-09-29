@@ -121,6 +121,7 @@ function renderAnalysis(ts){
  $('categories').innerHTML=vals.map(([k,v])=>'<div class="budget"><div class="budgetTop"><span>'+icon(k,'expense')+' '+esc(k)+'</span><b>'+money(v)+'</b></div><div class="progress"><i style="width:'+Math.min(100,v/max*100)+'%"></i></div></div>').join('')||'<div class="empty">Nincs kiadás ebben a hónapban.</div>';
 }
 function renderBars(){
+ const cur=settings.currency||'HUF';
  const out=[];for(let i=5;i>=0;i--){const d=new Date(viewMonth);d.setMonth(d.getMonth()-i);const k=monthKey(dateStr(d));const v=data.transactions.filter(t=>monthKey(t.date)===k&&t.type==='expense'&&(t.currency||'HUF')===cur).reduce((a,t)=>a+t.amount,0);out.push({d,v})}
  const max=Math.max(...out.map(x=>x.v),1);$('bars').innerHTML=out.map(x=>'<div class="bar" title="'+money(x.v)+'" style="height:'+Math.max(4,x.v/max*125)+'px"><span>'+x.d.toLocaleDateString('hu-HU',{month:'short'}).replace('.','')+'</span></div>').join('');
 }
