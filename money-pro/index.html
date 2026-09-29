@@ -34,7 +34,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;ma
 
 <div id="dashboard" class="view active">
   <div class="monthbar"><button id="prevMonth">‹</button><div class="monthname" id="monthName"></div><button id="nextMonth">›</button></div>
-  <section class="card hero"><div class="label">Egyenleg · HUF</div><div class="balance" id="balance">0 Ft</div><div class="heroRow"><div class="mini"><span>Bevétel</span><b class="green" id="income">+0 Ft</b></div><div class="mini"><span>Kiadás</span><b class="red" id="expense">−0 Ft</b></div></div></section>
+  <section class="card hero"><div class="label">Egyenleg · <span id="currencyLabel">HUF</span></div><div class="balance" id="balance">0 Ft</div><div class="heroRow"><div class="mini"><span>Bevétel</span><b class="green" id="income">+0 Ft</b></div><div class="mini"><span>Kiadás</span><b class="red" id="expense">−0 Ft</b></div></div></section>
   <div class="actions"><button class="action primary" id="quickIncome">＋ Bevétel</button><button class="action" id="quickExpense">− Kiadás</button><button class="action" id="openTx">📋 Tételek</button><button class="action" id="exportBtn">📤 Mentés</button></div>
   <section class="section"><div class="sectionTitle"><h2>Utolsó tételek</h2><span id="txCount"></span></div><div class="card" id="recent"></div></section>
   <section class="section"><div class="sectionTitle"><h2>Havi trend</h2><span>utolsó 6 hónap</span></div><div class="card chart"><div class="bars" id="bars"></div></div></section>
@@ -91,12 +91,12 @@ function icon(cat,type){if(type==='income')return '💵';return ({'Élelmiszer':
 function row(t){return '<div class="tx"><div class="txicon">'+icon(t.category,t.type)+'</div><div class="txmain"><b>'+esc(t.description)+'</b><small>'+fmtDate(t.date)+' · '+esc(t.category||'Egyéb')+'</small></div><div class="txamt '+(t.type==='income'?'in':'out')+'">'+(t.type==='income'?'+':'−')+money(t.amount,t.currency||'HUF')+'</div></div>'}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function render(){
- $('monthName').textContent=monthLabel(viewMonth);$('analysisMonth').textContent=monthLabel(viewMonth);
+ $('monthName').textContent=monthLabel(viewMonth);$('analysisMonth').textContent=monthLabel(viewMonth);$('currencyLabel').textContent=settings.currency||'HUF';
  const mk=txMonth(), ts=data.transactions.filter(t=>monthKey(t.date)===mk);
  const inc=ts.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0), exp=ts.filter(t=>t.type==='expense').reduce((a,t)=>a+t.amount,0);
- $('balance').textContent=money(inc-exp,'HUF');$('income').textContent='+'+money(inc,'HUF');$('expense').textContent='−'+money(exp,'HUF');
+ $('balance').textContent=money(inc-exp,cur);$('income').textContent='+'+money(inc,cur);$('expense').textContent='−'+money(exp,cur);
  const sorted=[...ts].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);$('recent').innerHTML=sorted.slice(0,6).map(row).join('')||'<div class="empty">Ebben a hónapban még nincs tétel.</div>';$('txCount').textContent=ts.length+' tétel';
- renderAll();renderAnalysis(ts);renderBars();
+ renderAll();renderAnalysis(curTs);renderBars();
 }
 function renderAll(){
  const q=$('search').value.toLowerCase(), f=$('filterType').value;
@@ -114,7 +114,7 @@ function renderAnalysis(ts){
  $('categories').innerHTML=vals.map(([k,v])=>'<div class="budget"><div class="budgetTop"><span>'+icon(k,'expense')+' '+esc(k)+'</span><b>'+money(v)+'</b></div><div class="progress"><i style="width:'+Math.min(100,v/max*100)+'%"></i></div></div>').join('')||'<div class="empty">Nincs kiadás ebben a hónapban.</div>';
 }
 function renderBars(){
- const out=[];for(let i=5;i>=0;i--){const d=new Date(viewMonth);d.setMonth(d.getMonth()-i);const k=monthKey(dateStr(d));const v=data.transactions.filter(t=>monthKey(t.date)===k&&t.type==='expense').reduce((a,t)=>a+t.amount,0);out.push({d,v})}
+ const out=[];for(let i=5;i>=0;i--){const d=new Date(viewMonth);d.setMonth(d.getMonth()-i);const k=monthKey(dateStr(d));const v=data.transactions.filter(t=>monthKey(t.date)===k&&t.type==='expense'&&(t.currency||'HUF')===cur).reduce((a,t)=>a+t.amount,0);out.push({d,v})}
  const max=Math.max(...out.map(x=>x.v),1);$('bars').innerHTML=out.map(x=>'<div class="bar" title="'+money(x.v)+'" style="height:'+Math.max(4,x.v/max*125)+'px"><span>'+x.d.toLocaleDateString('hu-HU',{month:'short'}).replace('.','')+'</span></div>').join('');
 }
 function openModal(type){editType=type;$('modalTitle').textContent=type==='income'?'＋ Új bevétel':'− Új kiadás';$('incomeType').classList.toggle('sel',type==='income');$('expenseType').classList.toggle('sel',type==='expense');$('date').value=today;$('currency').value=settings.currency;$('desc').value='';$('amount').value='';$('modal').classList.add('show');setTimeout(()=>$('desc').focus(),50)}
