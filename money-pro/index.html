@@ -81,7 +81,7 @@ let settings=JSON.parse(localStorage.getItem(SETTINGS)||'null')||{currency:'HUF'
 let viewMonth=new Date(); viewMonth.setDate(1);
 let editType='income';
 function addPeriod(date,frequency){const d=new Date(date+'T12:00:00');if(frequency==='weekly')d.setDate(d.getDate()+7);else if(frequency==='yearly')d.setFullYear(d.getFullYear()+1);else{const day=d.getDate();d.setMonth(d.getMonth()+1);if(d.getDate()<day)d.setDate(0)}return dateStr(d)}
-function processRecurring(){if(!Array.isArray(data.recurring))data.recurring=[];let changed=false;const now=today;data.recurring.forEach(r=>{if(r.active===false)return;let guard=0;while(r.nextDate<=now&&guard++<120){data.transactions.push({id:Date.now()+Math.random(),description:r.description,amount:r.amount,currency:r.currency,type:r.type,date:r.nextDate,category:r.category,recurringId:r.id});r.nextDate=addPeriod(r.nextDate,r.frequency);changed=true}});if(changed)save()}
+function processRecurring(){if(window._processingRecurring)return;window._processingRecurring=true;if(!Array.isArray(data.recurring))data.recurring=[];let changed=false;const now=today;data.recurring.forEach(r=>{if(r.active===false)return;let guard=0;while(r.nextDate<=now&&guard++<120){data.transactions.push({id:Date.now()+Math.random(),description:r.description,amount:r.amount,currency:r.currency,type:r.type,date:r.nextDate,category:r.category,recurringId:r.id});r.nextDate=addPeriod(r.nextDate,r.frequency);changed=true}});if(changed)save();window._processingRecurring=false}
 
 const $=id=>document.getElementById(id);
 const money=(n,c='HUF')=>new Intl.NumberFormat('hu-HU',{maximumFractionDigits:c==='HUF'?0:2}).format(n)+' '+(C[c]||c);
@@ -97,7 +97,7 @@ function icon(cat,type){if(type==='income')return '💵';return ({'Élelmiszer':
 function row(t){return '<div class="tx"><div class="txicon">'+icon(t.category,t.type)+'</div><div class="txmain"><b>'+esc(t.description)+'</b><small>'+fmtDate(t.date)+' · '+esc(t.category||'Egyéb')+'</small></div><div class="txamt '+(t.type==='income'?'in':'out')+'">'+(t.type==='income'?'+':'−')+money(t.amount,t.currency||'HUF')+'</div><button class="txdel" data-txdel="'+t.id+'" aria-label="Törlés" title="Törlés">🗑️</button></div>'}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function render(){
- processRecurring();
+ // process recurring is intentionally triggered only after initial render guard
  $('monthName').textContent=monthLabel(viewMonth);$('analysisMonth').textContent=monthLabel(viewMonth);$('currencyLabel').textContent=settings.currency||'HUF';
  const mk=txMonth(), cur=settings.currency||'HUF', ts=data.transactions.filter(t=>monthKey(t.date)===mk&&(t.currency||'HUF')===cur), curTs=ts;
  const inc=ts.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0), exp=ts.filter(t=>t.type==='expense').reduce((a,t)=>a+t.amount,0);
