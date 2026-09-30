@@ -149,14 +149,23 @@ select{background:#0d1b2d;color:#fff;border:1px solid var(--line);border-radius:
  function fit(){
   const shell=$('boardShell'), W=shell.clientWidth*.92,H=shell.clientHeight*.92;
   let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
-  cells.forEach(([q,r])=>{const [x,y]=unit(q,r);minX=Math.min(minX,x-1);maxX=Math.max(maxX,x+1);minY=Math.min(minY,y-SQ3/2);maxY=Math.max(maxY,y+SQ3/2)});
-  const scale=Math.min(W/(maxX-minX),H/(maxY-minY));
-  boardPx=Math.min(scale*2, W/(N*1.45));
-  hexW=boardPx;hexH=SQ3*boardPx/2;
+  cells.forEach(([q,r])=>{
+   const [x,y]=unit(q,r);
+   minX=Math.min(minX,x-1); maxX=Math.max(maxX,x+1);
+   minY=Math.min(minY,y-SQ3/2); maxY=Math.max(maxY,y+SQ3/2);
+  });
+  const usable=Math.min(W/(maxX-minX),H/(maxY-minY));
+  boardPx=usable*.98;
+  hexW=boardPx; hexH=SQ3*boardPx/2;
  }
  function pos(q,r){
-  const [x,y]=unit(q,r), extentX=(2*N-1)*1.5, extentY=SQ3*(N+.5);
-  return [(x+extentX/2)*boardPx,(y+extentY/2)*boardPx];
+  const [x,y]=unit(q,r);
+  let minX=Infinity,minY=Infinity;
+  cells.forEach(([cq,cr])=>{
+   const [cx,cy]=unit(cq,cr);
+   minX=Math.min(minX,cx-1); minY=Math.min(minY,cy-SQ3/2);
+  });
+  return [(x-minX)*boardPx,(y-minY)*boardPx];
  }
  function setNum(el,n){el.textContent=n.toLocaleString('hu-HU')}
  function palette(v){
@@ -184,7 +193,10 @@ select{background:#0d1b2d;color:#fff;border:1px solid var(--line);border-radius:
   e.classList.toggle('new',fresh);e.classList.toggle('merge',mergeIds.has(t.id));
  }
  function render(){
-  fit();const b=$('board');b.style.width=(N*1.5+2)*boardPx+'px';b.style.height=(N*SQ3+1)*boardPx+'px';
+  fit();const b=$('board');
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  cells.forEach(([q,r])=>{const [x,y]=unit(q,r);minX=Math.min(minX,x-1);maxX=Math.max(maxX,x+1);minY=Math.min(minY,y-SQ3/2);maxY=Math.max(maxY,y+SQ3/2)});
+  b.style.width=(maxX-minX)*boardPx+'px';b.style.height=(maxY-minY)*boardPx+'px';
   b.style.marginLeft=-b.offsetWidth/2+'px';b.style.marginTop=-b.offsetHeight/2+'px';
   b.innerHTML='';
   cells.forEach(([q,r])=>{const e=document.createElement('div');e.className='cell';const [x,y]=pos(q,r);
@@ -298,7 +310,12 @@ select{background:#0d1b2d;color:#fff;border:1px solid var(--line);border-radius:
  }
  let sx=0,sy=0,drag=false;
  $('boardShell').addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;drag=true;sx=e.clientX;sy=e.clientY});
- window.addEventListener('pointerup',e=>{if(!drag)return;drag=false;const dx=e.clientX-sx,dy=e.clientY-sy;if(Math.hypot(dx,dy)>22)move(moveVector(dx,dy))});
+ window.addEventListener('pointerup',e=>{
+  if(!drag)return; drag=false;
+  const dx=e.clientX-sx,dy=e.clientY-sy;
+  if(Math.hypot(dx,dy)>22) move(moveVector(dx,dy));
+ });
+ window.addEventListener('pointercancel',()=>{drag=false});
  window.addEventListener('keydown',e=>{
   const map={q:0,w:1,e:2,d:2,c:3,s:3,z:4,a:4,x:5,arrowup:0,arrowright:2,arrowdown:3,arrowleft:5};
   const k=e.key.toLowerCase();
