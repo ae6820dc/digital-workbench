@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#08111f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2308111f'/%3E%3Cpath fill='%237c5cff' d='M50 8 87 29v42L50 92 13 71V29z'/%3E%3Cpath fill='%2300d4aa' d='M50 20 76 35v30L50 80 24 65V35z'/%3E%3Ctext x='50' y='61' text-anchor='middle' font-family='Arial' font-size='24' font-weight='900' fill='white'%3E2048%3C/text%3E%3C/svg%3E">
+<title>Hexic 2048 — Digital Workbench Edition</title>
+<style>
+:root{
+ --bg:#08111f;--panel:#0e1a2b;--panel2:#122238;--line:#20344e;--text:#eef5ff;--muted:#8fa3bb;
+ --accent:#7c5cff;--accent2:#00d4aa;--good:#38d39f;--danger:#ff667d;
+ --empty:#14253a;--empty2:#102034;--shadow:0 22px 60px #0008;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:
+ radial-gradient(900px 600px at 50% -10%,#18345a 0,#08111f 62%);
+ color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+body{display:flex;justify-content:center;overflow-x:hidden}
+button{font:inherit;color:inherit}
+#app{width:min(620px,100%);min-height:100dvh;padding:14px 14px calc(18px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+header{display:flex;align-items:center;gap:12px}
+.logo{width:54px;height:54px;flex:none;display:grid;place-items:center;border:1px solid #ffffff18;border-radius:16px;
+ background:linear-gradient(145deg,#7c5cff,#3f2e9d);box-shadow:0 10px 30px #5e42ff33;font-size:23px;font-weight:950;transform:rotate(30deg)}
+.logo span{transform:rotate(-30deg)}
+.brand{min-width:0;flex:1}.brand h1{font-size:21px;line-height:1;margin:0 0 5px;letter-spacing:-.5px}
+.brand p{margin:0;color:var(--muted);font-size:12px}
+.iconbtn,.pillbtn{border:1px solid var(--line);background:#0d1929;border-radius:12px;cursor:pointer}
+.iconbtn{width:44px;height:44px;font-size:19px}.iconbtn:hover,.pillbtn:hover{border-color:#395271;background:#122238}
+.scorebar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.card{background:linear-gradient(180deg,#122238,#0d1929);border:1px solid var(--line);border-radius:14px;padding:9px 12px;min-width:0}
+.card small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:1.1px}
+.card b{display:block;font-size:20px;line-height:1.15;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#boardShell{position:relative;width:100%;aspect-ratio:1/1;display:grid;place-items:center}
+#board{position:relative;width:96%;height:96%;filter:drop-shadow(0 20px 35px #0007)}
+.cell,.tile{position:absolute;display:grid;place-items:center;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%)}
+.cell{background:linear-gradient(145deg,var(--empty),var(--empty2));box-shadow:inset 0 0 0 1px #ffffff08}
+.cell:after{content:"";position:absolute;inset:8%;clip-path:inherit;border:1px solid #ffffff08}
+.tile{z-index:2;font-weight:900;color:#fff;will-change:transform;transition:transform .13s cubic-bezier(.2,.8,.2,1),filter .13s;
+ text-shadow:0 2px 4px #0005;box-shadow:0 10px 20px #0005}
+.tile.new{animation:spawn .18s cubic-bezier(.2,1.5,.4,1)}
+.tile.merge{animation:merge .22s ease-out}
+@keyframes spawn{0%{opacity:0;transform:scale(.25)}100%{opacity:1;transform:scale(1)}}
+@keyframes merge{0%{filter:brightness(1)}45%{filter:brightness(1.8);transform:scale(1.13)}100%{filter:brightness(1);transform:scale(1)}}
+.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ctrl{height:45px;border:1px solid var(--line);border-radius:12px;background:#0e1b2c;cursor:pointer;font-weight:700;font-size:13px}
+.ctrl.primary{background:linear-gradient(135deg,#7c5cff,#5c43d8);border-color:#9079ff}
+.ctrl.on{outline:2px solid #00d4aa55;background:#10362f}
+.ctrl:disabled{opacity:.35;cursor:not-allowed}
+.help{display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--muted);font-size:11px;padding:0 3px}
+.help kbd{border:1px solid var(--line);background:#0e1a2b;border-radius:5px;padding:2px 5px;color:#b7c7da}
+.overlay{position:absolute;inset:0;z-index:10;border-radius:20px;background:#07101de8;backdrop-filter:blur(9px);display:none;place-items:center;text-align:center;padding:30px}
+.overlay.show{display:grid}
+.modal{max-width:340px;width:100%}.modal h2{font-size:30px;margin:0 0 8px}.modal p{color:var(--muted);margin:0 0 20px;font-size:13px}
+.modal .bigscore{font-size:38px;font-weight:950;margin:10px 0 20px}
+.modal .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pillbtn{padding:11px 12px}.pillbtn.primary{background:var(--accent);border-color:var(--accent)}
+.drawer{position:fixed;inset:0;z-index:30;background:#02071199;backdrop-filter:blur(5px);display:none;justify-content:flex-end}
+.drawer.show{display:flex}.sheet{width:min(390px,92%);height:100%;background:#0b1727;border-left:1px solid var(--line);padding:20px;box-shadow:-20px 0 60px #0008;overflow:auto}
+.sheet h2{margin:0 0 18px;font-size:20px}.sheet section{border-top:1px solid var(--line);padding:16px 0}.sheet label{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:12px 0;color:#cbd7e5;font-size:13px}
+select{background:#0d1b2d;color:#fff;border:1px solid var(--line);border-radius:9px;padding:8px 10px}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{background:#0d1b2d;border:1px solid var(--line);border-radius:10px;padding:10px}.stat small{display:block;color:var(--muted);font-size:10px}.stat b{font-size:18px}
+.toast{position:fixed;z-index:50;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#eff7ff;color:#07101d;border-radius:999px;padding:9px 15px;font-size:12px;font-weight:800;transition:.2s;box-shadow:0 8px 30px #0008}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:420px){#app{padding:10px 10px calc(14px + env(safe-area-inset-bottom))}.brand h1{font-size:19px}.card b{font-size:17px}.ctrl{font-size:12px}.help{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.tile,.toast{transition:none!important}.tile.new,.tile.merge{animation:none}}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+ <div class="logo"><span>2048</span></div>
+ <div class="brand"><h1>HEXIC 2048</h1><p>Digital Workbench Edition · hexagon merge engine</p></div>
+ <button class="iconbtn" id="settings" aria-label="Beállítások">⚙</button>
+</header>
+
+<div class="scorebar">
+ <div class="card"><small>Score</small><b id="score">0</b></div>
+ <div class="card"><small>Best</small><b id="best">0</b></div>
+ <div class="card"><small>Moves</small><b id="moves">0</b></div>
+</div>
+
+<div id="boardShell">
+ <div id="board"></div>
+ <div class="overlay" id="overlay">
+  <div class="modal">
+   <h2 id="ovTitle">Game Over</h2>
+   <p id="ovText">A mező megtelt.</p>
+   <div class="bigscore" id="ovScore">0</div>
+   <div class="row">
+    <button class="pillbtn" id="ovUndo">↶ Undo</button>
+    <button class="pillbtn primary" id="ovNew">New game</button>
+   </div>
+  </div>
+ </div>
+</div>
+
+<div class="controls">
+ <button class="ctrl primary" id="newBtn">＋ New</button>
+ <button class="ctrl" id="undoBtn">↶ Undo</button>
+ <button class="ctrl" id="hintBtn">💡 Hint</button>
+ <button class="ctrl" id="pauseBtn">Ⅱ Pause</button>
+</div>
+<div class="help">
+ <span>Swipe a mezőn · billentyűzet: <kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span>
+ <span id="modeLabel">HEX 5</span>
+</div>
+</div>
+
+<div class="drawer" id="drawer">
+ <div class="sheet">
+  <h2>⚙ Game Control</h2>
+  <section>
+   <label>Board size <select id="size"><option value="3">Hex 3</option><option value="4">Hex 4</option><option value="5" selected>Hex 5</option><option value="6">Hex 6</option><option value="7">Hex 7</option></select></label>
+   <label>Starting tiles <select id="startCount"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></label>
+   <label>Dark glass UI <input id="glass" type="checkbox" checked></label>
+  </section>
+  <section><div class="statgrid">
+   <div class="stat"><small>Highest tile</small><b id="statTile">0</b></div>
+   <div class="stat"><small>Empty cells</small><b id="statEmpty">0</b></div>
+   <div class="stat"><small>Merges</small><b id="statMerges">0</b></div>
+   <div class="stat"><small>Session time</small><b id="statTime">00:00</b></div>
+  </div></section>
+  <section><button class="pillbtn" id="closeSettings" style="width:100%">Close</button></section>
+ </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+ const $ = id => document.getElementById(id);
+ const SQ3 = Math.sqrt(3);
+ const dirs = [[0,-1],[1,-1],[1,0],[0,1],[-1,1],[-1,0]];
+ let N=5, cells=[], cellSet=new Set(), tiles=[], nextId=1;
+ let score=0, best=0, moves=0, merges=0, history=[];
+ let paused=false, gameOver=false, firstRender=true, sessionStart=Date.now(), hintTimer=0;
+ let boardPx=0, hexW=0, hexH=0, newIds=new Set(), mergeIds=new Set();
+
+ const SAVE='dw_hexic2048_v1';
+
+ function key(q,r){return q+','+r}
+ function buildCells(){
+  cells=[]; const R=N-1;
+  for(let q=-R;q<=R;q++)
+   for(let r=Math.max(-R,-q-R);r<=Math.min(R,-q+R);r++) cells.push([q,r]);
+  cellSet=new Set(cells.map(c=>key(c[0],c[1])));
+ }
+ function unit(q,r){return [1.5*q,SQ3*(r+q/2)]}
+ function fit(){
+  const shell=$('boardShell'), W=shell.clientWidth*.92,H=shell.clientHeight*.92;
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  cells.forEach(([q,r])=>{const [x,y]=unit(q,r);minX=Math.min(minX,x-1);maxX=Math.max(maxX,x+1);minY=Math.min(minY,y-SQ3/2);maxY=Math.max(maxY,y+SQ3/2)});
+  const scale=Math.min(W/(maxX-minX),H/(maxY-minY));
+  boardPx=Math.min(scale*2, W/(N*1.45));
+  hexW=boardPx;hexH=SQ3*boardPx/2;
+ }
+ function pos(q,r){
+  const [x,y]=unit(q,r), extentX=(2*N-1)*1.5, extentY=SQ3*(N+.5);
+  return [(x+extentX/2)*boardPx,(y+extentY/2)*boardPx];
+ }
+ function setNum(el,n){el.textContent=n.toLocaleString('hu-HU')}
+ function palette(v){
+  const p=[
+   ['#eaf2ff','#142238'],['#a8d7ff','#10223a'],['#7c5cff','#fff'],['#6d63e8','#fff'],
+   ['#4e70df','#fff'],['#348bd8','#fff'],['#00a9c7','#fff'],['#00c39b','#fff'],
+   ['#32cf7b','#fff'],['#9bd43b','#12210f'],['#e8c52d','#211b05'],['#ff9d36','#fff'],
+   ['#ff6d62','#fff'],['#ff4e8f','#fff']
+  ];
+  const i=Math.min(p.length-1,Math.max(0,Math.log2(v)-1));
+  return p[i];
+ }
+ function fontSize(v){
+  const l=String(v).length;
+  return Math.max(13,Math.min(boardPx*.43,boardPx*(.78-l*.075)));
+ }
+ function tileEl(t, fresh=false){
+  let e=document.querySelector('[data-id="'+t.id+'"]');
+  if(!e){e=document.createElement('div');e.className='tile';e.dataset.id=t.id;$('board').appendChild(e)}
+  const [x,y]=pos(t.q,t.r), c=palette(t.v);
+  e.style.width=boardPx*.94+'px';e.style.height=hexH*.94+'px';
+  e.style.transform='translate('+((x-boardPx*.47).toFixed(2))+'px,'+((y-hexH*.47).toFixed(2))+'px)';
+  e.style.background='linear-gradient(145deg,'+c[0]+','+c[0]+'dd)';
+  e.style.color=c[1];e.style.fontSize=fontSize(t.v)+'px';e.textContent=t.v;
+  e.classList.toggle('new',fresh);e.classList.toggle('merge',mergeIds.has(t.id));
+ }
+ function render(){
+  fit();const b=$('board');b.style.width=(N*1.5+2)*boardPx+'px';b.style.height=(N*SQ3+1)*boardPx+'px';
+  b.style.marginLeft=-b.offsetWidth/2+'px';b.style.marginTop=-b.offsetHeight/2+'px';
+  b.innerHTML='';
+  cells.forEach(([q,r])=>{const e=document.createElement('div');e.className='cell';const [x,y]=pos(q,r);
+   e.style.width=boardPx+'px';e.style.height=hexH+'px';e.style.transform='translate('+(x-boardPx/2)+'px,'+(y-hexH/2)+'px)';b.appendChild(e)});
+  tiles.forEach(t=>tileEl(t,newIds.has(t.id)));
+  newIds.clear();mergeIds.clear();
+  setNum($('score'),score);setNum($('best'),best);setNum($('moves'),moves);
+  $('modeLabel').textContent='HEX '+N;
+  updateStats();updateButtons();
+ }
+ function spawn(){
+  const used=new Set(tiles.map(t=>key(t.q,t.r))), free=cells.filter(c=>!used.has(key(c[0],c[1])));
+  if(!free.length)return null;
+  const c=free[Math.floor(Math.random()*free.length)];
+  const t={id:nextId++,v:Math.random()<.9?2:4,q:c[0],r:c[1]};
+  tiles.push(t);newIds.add(t.id);return t;
+ }
+ function snapshot(){return {tiles:tiles.map(t=>({...t})),score,moves,merges}}
+ function restore(s){tiles=s.tiles.map(t=>({...t}));score=s.score;moves=s.moves;merges=s.merges;gameOver=false;paused=false;save();hideOverlay();render()}
+ function move(di){
+  if(paused||gameOver)return false;
+  const d=dirs[di], before=snapshot(), grid=new Map(tiles.map(t=>[key(t.q,t.r),t]));
+  const order=tiles.slice().sort((a,b)=>(b.q*d[0]+b.r*d[1])-(a.q*d[0]+a.r*d[1]));
+  let changed=false,gain=0;
+  for(const t of order){
+   let q=t.q,r=t.r;
+   while(true){
+    const nq=q+d[0],nr=r+d[1], k=key(nq,nr);
+    if(!cellSet.has(k))break;
+    const other=grid.get(k);
+    if(!other){q=nq;r=nr;continue}
+    if(other.v===t.v && !other.merged && !t.merged){
+      grid.delete(key(t.q,t.r));t.dead=true;t.q=nq;t.r=nr;t.merged=true;
+      other.v*=2;other.merged=true;mergeIds.add(other.id);gain+=other.v;changed=true;
+    }
+    break;
+   }
+   if(!t.dead && (q!==t.q||r!==t.r)){grid.delete(key(t.q,t.r));t.q=q;t.r=r;grid.set(key(q,r),t);changed=true}
+  }
+  tiles.forEach(t=>{delete t.merged});
+  if(!changed)return false;
+  history.push(before);if(history.length>20)history.shift();
+  tiles=tiles.filter(t=>!t.dead);tiles.forEach(t=>delete t.dead);
+  score+=gain;moves++;merges+=gain?1:0;
+  if(score>best){best=score;localStorage.setItem('dw_hex_best',best)}
+  spawn();
+  if(!hasMoves())endGame();
+  save();render();return true;
+ }
+ function hasMoves(){
+  if(tiles.length<cells.length)return true;
+  const set=new Set(tiles.map(t=>key(t.q,t.r)));
+  return tiles.some(t=>dirs.some(d=>{
+   const n=key(t.q+d[0],t.r+d[1]),o=tiles.find(x=>key(x.q,x.r)===n);
+   return cellSet.has(n)&&(!o||o.v===t.v)
+  }));
+ }
+ function undo(){
+  if(!history.length||paused)return;
+  restore(history.pop());toast('Undo — visszaléptünk egy lépést');
+ }
+ function newGame(){
+  history=[];tiles=[];score=0;moves=0;merges=0;nextId=1;gameOver=false;paused=false;sessionStart=Date.now();
+  buildCells();let count=+$('startCount').value;for(let i=0;i<count;i++)spawn();
+  save();hideOverlay();render();toast('Új Hexic 2048 pálya');
+ }
+ function endGame(){
+  gameOver=true;showOverlay('GAME OVER','Nincs több érvényes lépés.',score);
+ }
+ function showOverlay(title,text,sc){
+  $('ovTitle').textContent=title;$('ovText').textContent=text;setNum($('ovScore'),sc);$('overlay').classList.add('show');
+  $('ovUndo').disabled=!history.length;
+ }
+ function hideOverlay(){$('overlay').classList.remove('show')}
+ function hint(){
+  if(paused||gameOver)return;
+  const choices=dirs.map((_,i)=>i).filter(i=>{
+   const copy=tiles.map(t=>({...t}));const old=tiles;tiles=copy;const ok=simulate(i);tiles=old;return ok
+  });
+  if(!choices.length){showOverlay('GAME OVER','Nincs több érvényes lépés.',score);return}
+  const i=choices[Math.floor(Math.random()*choices.length)];
+  const arrows=['↖','↗','→','↘','↙','←'];toast('Próbáld: '+arrows[i]);
+ }
+ function simulate(di){
+  const d=dirs[di], grid=new Map(tiles.map(t=>[key(t.q,t.r),t]));let changed=false;
+  const order=tiles.slice().sort((a,b)=>(b.q*d[0]+b.r*d[1])-(a.q*d[0]+a.r*d[1]));
+  for(const t of order){let q=t.q,r=t.r;while(true){const nq=q+d[0],nr=r+d[1],k=key(nq,nr);if(!cellSet.has(k))break;const o=grid.get(k);if(!o){q=nq;r=nr;continue}if(o.v===t.v&&!o.used&&!t.used){changed=true;o.used=true}break}if(changed)return true}
+  return false
+ }
+ function togglePause(){if(gameOver)return;paused=!paused;if(paused)showOverlay('PAUSED','A játék szünetel.',score);else hideOverlay();updateButtons()}
+ function updateButtons(){$('undoBtn').disabled=!history.length||paused;$('pauseBtn').textContent=paused?'▶ Resume':'Ⅱ Pause';$('ovUndo').disabled=!history.length}
+ function updateStats(){
+  const hi=tiles.reduce((m,t)=>Math.max(m,t.v),0),empty=cells.length-tiles.length;
+  setNum($('statTile'),hi);setNum($('statEmpty'),empty);setNum($('statMerges'),merges);
+  const sec=Math.floor((Date.now()-sessionStart)/1000),mm=String(Math.floor(sec/60)).padStart(2,'0'),ss=String(sec%60).padStart(2,'0');
+  $('statTime').textContent=mm+':'+ss;
+ }
+ function save(){
+  try{localStorage.setItem(SAVE,JSON.stringify({N,tiles,score,best,moves,merges,nextId,history,sessionStart}))}catch(e){}
+ }
+ function load(){
+  try{
+   const s=JSON.parse(localStorage.getItem(SAVE)||'null');if(!s)return false;
+   N=Math.min(7,Math.max(3,s.N||5));buildCells();tiles=s.tiles||[];score=s.score||0;best=Math.max(s.best||0,+localStorage.getItem('dw_hex_best')||0);
+   moves=s.moves||0;merges=s.merges||0;nextId=s.nextId||1;history=s.history||[];sessionStart=s.sessionStart||Date.now();return tiles.length>0;
+  }catch(e){return false}
+ }
+ function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(hintTimer);hintTimer=setTimeout(()=>e.classList.remove('show'),1500)}
+ function moveVector(dx,dy){
+  let bestI=0,best=-9;dirs.forEach((d,i)=>{let vx=1.5*d[0],vy=SQ3*(d[1]+d[0]/2),dot=(dx*vx+dy*vy)/(Math.hypot(dx,dy)*Math.hypot(vx,vy));if(dot>best){best=dot;bestI=i}});return bestI;
+ }
+ let sx=0,sy=0,drag=false;
+ $('boardShell').addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;drag=true;sx=e.clientX;sy=e.clientY});
+ window.addEventListener('pointerup',e=>{if(!drag)return;drag=false;const dx=e.clientX-sx,dy=e.clientY-sy;if(Math.hypot(dx,dy)>22)move(moveVector(dx,dy))});
+ window.addEventListener('keydown',e=>{
+  const map={q:0,w:1,e:2,d:2,c:3,s:3,z:4,a:4,x:5,arrowup:0,arrowright:2,arrowdown:3,arrowleft:5};
+  const k=e.key.toLowerCase();
+  if(map[k]!==undefined){e.preventDefault();move(map[k])}
+  if(k==='u')undo();if(k==='h')hint();if(k==='p')togglePause();
+ });
+ $('newBtn').onclick=newGame;$('undoBtn').onclick=undo;$('hintBtn').onclick=hint;$('pauseBtn').onclick=togglePause;
+ $('ovNew').onclick=newGame;$('ovUndo').onclick=undo;
+ $('settings').onclick=()=>$('drawer').classList.add('show');$('closeSettings').onclick=()=>$('drawer').classList.remove('show');
+ $('size').onchange=()=>{N=+$('size').value;newGame()};$('startCount').onchange=newGame;
+ $('glass').onchange=e=>document.documentElement.style.setProperty('--panel',e.target.checked?'#0e1a2b':'#101010');
+ window.addEventListener('resize',render);
+ best=+localStorage.getItem('dw_hex_best')||0;
+ if(!load())newGame();else render();
+ setInterval(updateStats,1000);
+})();
+</script>
+</body>
+</html>
