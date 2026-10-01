@@ -263,7 +263,7 @@ function empties(ts){const o=new Set(ts.map(t=>key(t.q,t.r)));return cells.filte
 function spawn(isX){
   const em=empties(tiles);if(!em.length)return null;
   const c=em[Math.floor(Math.random()*em.length)];
-  const t={id:++uid,v:isX?"X":(Math.random()<.9?2:4),q:c[0],r:c[1]};tiles.push(t);return t;
+  const t={id:++uid,v:isX?"X":2,q:c[0],r:c[1]};tiles.push(t);return t;
 }
 function step(ts,d){
   const grid=new Map();ts.forEach(t=>{t.m=false;t.dead=false;grid.set(key(t.q,t.r),t)});
@@ -430,11 +430,11 @@ function aiForecast(ts,di){
   const free=empties(after);
   let total=aiEvaluate(after,r.gained);
   if(!free.length)return total;
-  // Look one more move ahead after representative 2/4 spawns.
+  // Look one more move ahead assuming every new tile is a 2.
   const candidates=free.length<=10?free:free.slice(0,10);
   let expected=0;
   for(const c of candidates){
-    for(const v of [2,4]){
+    for(const v of [2]){
       const probe=cloneTiles(after);
       probe.push({id:-100000-c[0]*100-c[1]*3-v,v,q:c[0],r:c[1]});
       const next=movableFromState(probe);
@@ -452,7 +452,7 @@ function aiForecast(ts,di){
       expected+=best===-Infinity?aiEvaluate(probe,0):best;
     }
   }
-  expected/=candidates.length*2;
+  expected/=candidates.length;
   return total*.58+expected*.42;
 }
 function movableFromState(ts){
