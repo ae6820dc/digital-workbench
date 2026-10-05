@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hex Randomizer v3</title>
+<style>
+*{box-sizing:border-box}
+:root{color-scheme:dark}
+body{margin:0;background:#0b1020;color:#eef2ff;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.wrap{max-width:1100px;margin:auto;padding:28px 16px 40px}
+h1{margin:0 0 6px;font-size:clamp(28px,5vw,44px)}
+.sub{color:#9aa6bf;margin:0 0 24px}
+.card{background:#151c30;border:1px solid #28324b;border-radius:18px;padding:18px;box-shadow:0 12px 35px #0005}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field label{display:block;color:#aeb9cf;font-size:14px;margin-bottom:7px}
+input,button{font:inherit}
+input{width:100%;background:#0c1324;color:#fff;border:1px solid #36425f;border-radius:11px;padding:12px 13px;font-size:18px}
+button{border:0;border-radius:11px;padding:12px 18px;background:#3b82f6;color:#fff;font-weight:700;cursor:pointer}
+button:hover{filter:brightness(1.12)}
+.generate{grid-column:1/-1;font-size:17px;padding:14px}
+.output{margin-top:16px;background:#090e1a;border:1px solid #29344d;border-radius:14px;padding:18px;min-height:120px}
+.hex{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:clamp(16px,2.5vw,24px);line-height:1.65;word-break:break-all;letter-spacing:.02em}
+.row{display:flex;gap:10px;align-items:flex-start;margin:7px 0}
+.row .value{flex:1;min-width:0}
+.row button{flex:0 0 auto;padding:7px 10px;font-size:13px}
+.meta{display:flex;gap:14px;flex-wrap:wrap;color:#91a0bb;font-size:13px;margin-top:14px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.secondary{background:#29334b}
+.status{min-height:20px;color:#8fe3b1;font-size:13px;margin-top:10px}
+@media(max-width:650px){.controls{grid-template-columns:1fr}.wrap{padding-top:20px}.output{padding:14px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>⬡ Hex Randomizer</h1>
+  <p class="sub">Kriptográfiailag erős véletlen hexadecimális értékek generálása, akár 1024 jegy és 1024 darab egyszerre.</p>
+  <div class="card">
+    <div class="controls">
+      <div class="field">
+        <label for="length">Egy érték hossza — hexadecimális jegyek (1–1024)</label>
+        <input id="length" type="number" min="1" max="1024" value="42" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label for="amount">Generálandó darabszám (1–1024)</label>
+        <input id="amount" type="number" min="1" max="1024" value="10" inputmode="numeric">
+      </div>
+      <button id="generate" class="generate">⚡ GENERÁLÁS</button>
+    </div>
+    <div class="output">
+      <div id="hex" class="hex">—</div>
+      <div class="meta">
+        <span id="count">0 érték</span>
+        <span id="digits">0 jegy / érték</span>
+        <span>Karakterkészlet: 0–9, A–F</span>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="copy" class="secondary">📋 Összes másolása</button>
+    </div>
+    <div id="status" class="status"></div>
+  </div>
+</div>
+<script>
+const lengthInput=document.getElementById('length');
+const amountInput=document.getElementById('amount');
+const hexOut=document.getElementById('hex');
+const countOut=document.getElementById('count');
+const digitsOut=document.getElementById('digits');
+const status=document.getElementById('status');
+
+let values=[];
+const STORAGE_KEY='hex-randomizer-v3-state';
+
+function clampInput(input, fallback){
+  let n=Math.trunc(Number(input.value));
+  if(!Number.isFinite(n)) n=fallback;
+  n=Math.max(1,Math.min(1024,n));
+  input.value=n;
+  return n;
+}
+
+function generateOne(n){
+  const bytes=new Uint8Array(Math.ceil(n/2));
+  crypto.getRandomValues(bytes);
+  let s='';
+  for(const b of bytes) s+=b.toString(16).padStart(2,'0');
+  return s.slice(0,n).toUpperCase();
+}
+
+function renderValues(){
+  if(!values.length){
+    hexOut.textContent='—';
+    countOut.textContent='0 érték';
+    digitsOut.textContent='0 jegy / érték';
+    return;
+  }
+  const amount=values.length;
+  const n=values[0].length;
+  hexOut.innerHTML=values.map((v,i)=>'<div class="row"><span class="value">'+String(i+1).padStart(String(amount).length,' ') + '. ' + v+'</span><button class="secondary" data-index="'+i+'">📋 Másolás</button></div>').join('');
+  hexOut.querySelectorAll('button').forEach(btn=>btn.onclick=()=>copyOne(Number(btn.dataset.index)));
+  countOut.textContent=amount+' érték';
+  digitsOut.textContent=n+' jegy / érték';
+}
+
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify({length:Number(lengthInput.value),amount:Number(amountInput.value),values}));
+  }catch{}
+}
+
+function loadState(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw) return false;
+    const state=JSON.parse(raw);
+    if(!Array.isArray(state.values)||!state.values.length) return false;
+    if(!state.values.every(v=>typeof v==='string' && /^[0-9A-F]+$/.test(v) && v.length>=1 && v.length<=1024)) return false;
+    lengthInput.value=Math.max(1,Math.min(1024,Math.trunc(Number(state.length))||state.values[0].length));
+    amountInput.value=Math.max(1,Math.min(1024,Math.trunc(Number(state.amount))||state.values.length));
+    values=state.values.slice(0,1024);
+    renderValues();
+    status.textContent='A korábbi teljes állapot visszaállítva.';
+    return true;
+  }catch{return false;}
+}
+
+function generateHex(){
+  const n=clampInput(lengthInput,42);
+  const amount=clampInput(amountInput,10);
+  values=[];
+  for(let i=0;i<amount;i++) values.push(generateOne(n));
+  renderValues();
+  saveState();
+  status.textContent=amount+' db új, '+n+' jegyű érték generálva.';
+}
+
+async function copyOne(index){
+  if(!values[index]) return;
+  try{
+    await navigator.clipboard.writeText(values[index]);
+    status.textContent=(index+1)+'. érték a vágólapra került.';
+  }catch{
+    status.textContent='A másolás nem sikerült.';
+  }
+}
+async function copyHex(){
+  if(!values.length) return;
+  try{
+    await navigator.clipboard.writeText(values.join('\n'));
+    status.textContent='Az összes érték a vágólapra került.';
+  }catch{
+    status.textContent='A másolás nem sikerült — jelöld ki és másold kézzel.';
+  }
+}
+
+document.getElementById('generate').onclick=generateHex;
+document.getElementById('copy').onclick=copyHex;
+[lengthInput,amountInput].forEach(input=>input.addEventListener('keydown',e=>{if(e.key==='Enter')generateHex();}));
+if(!loadState()) generateHex();
+</script>
+</body>
+</html>
