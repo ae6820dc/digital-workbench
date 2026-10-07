@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ByteScope — File Intelligence</title>
+<style>
+*{box-sizing:border-box}
+:root{color-scheme:dark}
+body{margin:0;background:#0b1020;color:#e8edf7;font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+.wrap{max-width:1100px;margin:auto;padding:22px}
+header{display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:18px}
+h1{margin:0;font-size:clamp(28px,5vw,44px);letter-spacing:-1px}
+.sub{color:#8e9ab2;margin-top:6px}
+.badge{border:1px solid #273451;border-radius:999px;padding:8px 12px;color:#9fb3d8;font-size:12px;white-space:nowrap}
+.drop{border:1px dashed #42567e;border-radius:18px;padding:30px;text-align:center;background:#10182a;transition:.2s}
+.drop.drag{border-color:#7aa2ff;background:#14203a;transform:scale(1.01)}
+.drop strong{display:block;font-size:20px;margin-bottom:8px}
+button,.filebtn{border:0;border-radius:11px;padding:11px 15px;background:#263654;color:#fff;cursor:pointer;font-weight:650}
+button:hover,.filebtn:hover{background:#34496e}
+input[type=file]{display:none}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+.card{background:#111a2c;border:1px solid #202d46;border-radius:14px;padding:15px}
+.label{font-size:12px;color:#7f8ba3;text-transform:uppercase;letter-spacing:.08em}
+.value{font-size:22px;font-weight:750;margin-top:5px;word-break:break-word}
+.panel{background:#111a2c;border:1px solid #202d46;border-radius:16px;padding:16px;margin-top:12px}
+.panel h2{font-size:16px;margin:0 0 12px}
+.hash{display:grid;grid-template-columns:80px 1fr;gap:8px;font:12px ui-monospace,SFMono-Regular,Consolas,monospace}
+.hash code{word-break:break-all;color:#b9c8e5}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.tab.active{background:#5278d7}
+.hex{font:12px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre;overflow:auto;background:#0a0f1c;border-radius:10px;padding:13px;max-height:330px}
+canvas{width:100%;height:180px;background:#0a0f1c;border-radius:10px}
+pre{white-space:pre-wrap;word-break:break-word;background:#0a0f1c;border-radius:10px;padding:13px;max-height:260px;overflow:auto;font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace}
+.small{color:#8390a8;font-size:12px}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}header{align-items:start;flex-direction:column}}
+@media(max-width:480px){.wrap{padding:14px}.grid{grid-template-columns:1fr 1fr}.value{font-size:18px}.drop{padding:22px 14px}.hash{grid-template-columns:62px 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<div><h1>ByteScope</h1><div class="sub">Local file intelligence — hex, entropy, hashes & byte statistics.</div></div>
+<div class="badge">100% LOCAL · NO UPLOAD</div>
+</header>
+
+<div id="drop" class="drop">
+<strong>Húzz ide egy fájlt</strong>
+<div class="sub">vagy válaszd ki az eszközödről</div>
+<br>
+<label class="filebtn">📂 Fájl kiválasztása<input id="file" type="file"></label>
+</div>
+
+<div id="app" hidden>
+<div class="grid">
+<div class="card"><div class="label">Fájlnév</div><div id="name" class="value">—</div></div>
+<div class="card"><div class="label">Méret</div><div id="size" class="value">—</div></div>
+<div class="card"><div class="label">Típus</div><div id="type" class="value">—</div></div>
+<div class="card"><div class="label">Entrópia</div><div id="entropy" class="value">—</div></div>
+</div>
+
+<div class="panel">
+<h2>Hash-ek</h2>
+<div class="hash"><b>MD5</b><code id="md5">A Web Crypto API nem támogatja natívan.</code>
+<b>SHA-1</b><code id="sha1">—</code>
+<b>SHA-256</b><code id="sha256">—</code>
+<b>SHA-384</b><code id="sha384">—</code>
+<b>SHA-512</b><code id="sha512">—</code></div>
+</div>
+
+<div class="panel">
+<h2>Byte-eloszlás</h2>
+<canvas id="chart" width="1000" height="180"></canvas>
+<div id="topbytes" class="small" style="margin-top:9px">—</div>
+</div>
+
+<div class="panel">
+<h2>Hex / ASCII nézet</h2>
+<div class="tabs">
+<button class="tab active" data-mode="hex">Hex</button>
+<button class="tab" data-mode="ascii">ASCII</button>
+<button class="tab" data-mode="both">Hex + ASCII</button>
+</div>
+<div id="hex" class="hex"></div>
+</div>
+
+<div class="panel">
+<h2>Szöveg-előnézet</h2>
+<pre id="preview">—</pre>
+</div>
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let currentBytes=null, currentMode='hex';
+
+function fmtBytes(n){
+ const u=['B','KiB','MiB','GiB','TiB'];let i=0,x=n;
+ while(x>=1024&&i<u.length-1){x/=1024;i++}
+ return (i?x.toFixed(x<10?2:1):x.toLocaleString('hu-HU'))+' '+u[i];
+}
+function hex2(n){return n.toString(16).padStart(2,'0').toUpperCase()}
+function entropy(bytes){
+ if(!bytes.length)return 0;
+ const c=new Uint32Array(256);for(const b of bytes)c[b]++;
+ let e=0;for(const n of c)if(n){const p=n/bytes.length;e-=p*Math.log2(p)}
+ return e;
+}
+function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function ascii(b){return b>=32&&b<=126?String.fromCharCode(b):'.'}
+function renderHex(){
+ if(!currentBytes)return;
+ const limit=Math.min(currentBytes.length,4096), out=[];
+ for(let i=0;i<limit;i+=16){
+   const row=currentBytes.slice(i,i+16);
+   const hx=Array.from(row,hex2).join(' ').padEnd(47,' ');
+   const ac=Array.from(row,ascii).join('');
+   out.push(currentMode==='hex'
+     ? i.toString(16).padStart(8,'0')+'  '+hx
+     : currentMode==='ascii'
+       ? i.toString(16).padStart(8,'0')+'  '+ac
+       : i.toString(16).padStart(8,'0')+'  '+hx+'  |'+ac+'|');
+ }
+ $('hex').textContent=out.join('\n')+(currentBytes.length>4096?'\n… (a nézet az első 4096 byte-ot mutatja)':'');
+}
+function drawChart(bytes){
+ const c=$('chart'),ctx=c.getContext('2d'),w=c.width,h=c.height;
+ ctx.clearRect(0,0,w,h);
+ const counts=new Uint32Array(256);for(const b of bytes)counts[b]++;
+ const max=Math.max(1,...counts), bw=w/256;
+ ctx.fillStyle='#6f91df';
+ for(let i=0;i<256;i++){const bh=(counts[i]/max)*(h-28);ctx.fillRect(i*bw,h-bh,bw-.5,bh)}
+ ctx.fillStyle='#72809a';ctx.font='12px system-ui';ctx.fillText('00',0,h-7);ctx.fillText('FF',w-18,h-7);
+ const ranked=Array.from(counts,(n,i)=>({n,i})).sort((a,b)=>b.n-a.n).slice(0,8);
+ $('topbytes').textContent='Leggyakoribb byte-ok: '+ranked.map(x=>hex2(x.i)+' ('+x.n.toLocaleString('hu-HU')+'×)').join(' · ');
+}
+async function digest(name,bytes){
+ const buf=await crypto.subtle.digest(name,bytes);
+ return Array.from(new Uint8Array(buf),hex2).join('').toLowerCase();
+}
+async function analyze(file){
+ const buf=await file.arrayBuffer(), bytes=new Uint8Array(buf);
+ currentBytes=bytes;
+ $('app').hidden=false;
+ $('name').textContent=file.name;
+ $('size').textContent=fmtBytes(file.size);
+ $('type').textContent=file.type||'ismeretlen';
+ $('entropy').textContent=entropy(bytes).toFixed(4)+' / 8 bit';
+ drawChart(bytes);renderHex();
+ const decoder=new TextDecoder('utf-8',{fatal:false});
+ $('preview').textContent=decoder.decode(bytes.slice(0,12000));
+ for(const alg of ['SHA-1','SHA-256','SHA-384','SHA-512']){
+   const id=alg.toLowerCase().replace('-','');
+   $(id).textContent='számítás…';
+   $(id).textContent=await digest(alg,buf);
+ }
+}
+$('file').addEventListener('change',e=>e.target.files[0]&&analyze(e.target.files[0]));
+['dragenter','dragover'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.add('drag')}));
+['dragleave','drop'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.remove('drag')}));
+$('drop').addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)analyze(f)});
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentMode=b.dataset.mode;renderHex()});
+</script>
+</body>
+</html>
