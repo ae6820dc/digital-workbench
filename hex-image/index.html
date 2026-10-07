@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HEX Image Lab</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#090d12;color:#e5edf5;font:14px system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:1100px;margin:auto;padding:18px}h1{margin:0;font-size:27px}p{color:#91a4b7}.panel{background:#111923;border:1px solid #293948;border-radius:15px;padding:15px;margin:12px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+label{color:#91a4b7;font-size:12px}input,select,textarea,button{font:inherit}input,select{width:100%;margin-top:5px;padding:10px;border-radius:9px;border:1px solid #35495c;background:#0b1118;color:#e5edf5}
+textarea{width:100%;min-height:190px;resize:vertical;background:#080c11;color:#d9e7f4;border:1px solid #35495c;border-radius:10px;padding:12px;font:12px ui-monospace,monospace}
+button{padding:10px 13px;border:0;border-radius:9px;background:#26394b;color:#fff;cursor:pointer;margin:5px 5px 0 0}button:hover{background:#3a5268}
+canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;background:#05070a;border:1px solid #35495c;border-radius:10px;margin:auto}
+.drop{border:2px dashed #40566b;padding:22px;text-align:center;border-radius:11px;cursor:pointer}.drop input{display:none}
+.stat{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.box{background:#19232e;border-radius:9px;padding:10px}.num{font:18px ui-monospace,monospace;color:#dceaf7}
+@media(max-width:700px){.grid,.controls{grid-template-columns:1fr 1fr}.stat{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body><main>
+<h1>🖼️ HEX Image Lab</h1>
+<p>Pixeladatok HEX-ben → kép, vagy kép → pixel HEX. Teljesen helyben, feltöltés nélkül.</p>
+
+<div class="panel"><div class="controls">
+<label>Szélesség<input id="w" type="number" min="1" max="2048" value="32"></label>
+<label>Magasság<input id="h" type="number" min="1" max="2048" value="32"></label>
+<label>Formátum<select id="fmt"><option value="rgb">RGB · 3 byte/pixel</option><option value="rgba">RGBA · 4 byte/pixel</option></select></label>
+<label>Háttér<select id="bg"><option value="black">Fekete</option><option value="white">Fehér</option></select></label>
+</div>
+<button onclick="renderHex()">HEX → KÉP</button><button onclick="randomHex()">🎲 Véletlen HEX</button><button onclick="gradientHex()">🌈 Gradient HEX</button><button onclick="clearHex()">Törlés</button></div>
+
+<div class="grid">
+<section class="panel"><h3>HEX pixeladat</h3><textarea id="hex" spellcheck="false" placeholder="FF 00 00 00 FF 00 00 00 FF ..."></textarea>
+<div id="stats" class="stat"></div></section>
+<section class="panel"><h3>Előnézet</h3><canvas id="cv" width="32" height="32"></canvas><br>
+<button onclick="downloadPNG()">💾 PNG mentése</button><button onclick="copyHex()">📋 HEX másolása</button></section>
+</div>
+
+<div class="panel"><h3>KÉP → HEX</h3><label class="drop">📂 Válassz egy képet<input id="img" type="file" accept="image/*"></label>
+<p id="imeta"></p><button onclick="imageToHex()">Kép → HEX</button></div>
+<script>
+const $=id=>document.getElementById(id),cv=$('cv'),ctx=cv.getContext('2d');
+function bytes(){return ($('hex').value.match(/[0-9a-f]{2}/gi)||[]).map(x=>parseInt(x,16))}
+function renderHex(){
+ const a=bytes(),w=Math.max(1,+$('w').value),h=Math.max(1,+$('h').value),bpp=$('fmt').value==='rgba'?4:3;
+ cv.width=w;cv.height=h;let im=ctx.createImageData(w,h);
+ for(let i=0;i<w*h;i++){let s=i*bpp,r=a[s]??0,g=a[s+1]??0,b=a[s+2]??0,al=bpp===4?(a[s+3]??255):255;
+ im.data[i*4]=r;im.data[i*4+1]=g;im.data[i*4+2]=b;im.data[i*4+3]=al}
+ ctx.putImageData(im,0,0);stats(a,w,h,bpp)
+}
+function stats(a,w,h,bpp){$('stats').innerHTML='<div class=box>Pixel<div class=num>'+w*h+'</div></div><div class=box>HEX byte<div class=num>'+a.length+'</div></div><div class=box>Szükséges<div class=num>'+w*h*bpp+'</div></div><div class=box>Hiányzó<div class=num>'+Math.max(0,w*h*bpp-a.length)+'</div></div>'}
+function randomHex(){let n=+$('w').value*+$('h').value*($('fmt').value==='rgba'?4:3),a=new Uint8Array(n);crypto.getRandomValues(a);$('hex').value=[...a].map(x=>x.toString(16).padStart(2,'0').toUpperCase()).join(' ');renderHex()}
+function gradientHex(){let w=+$('w').value,h=+$('h').value,a=[];for(let y=0;y<h;y++)for(let x=0;x<w;x++){a.push(Math.round(x*255/(w-1||1)),Math.round(y*255/(h-1||1)),Math.round((x+y)*255/(w+h-2||1)));if($('fmt').value==='rgba')a.push(255)}$('hex').value=a.map(x=>x.toString(16).padStart(2,'0').toUpperCase()).join(' ');renderHex()}
+function clearHex(){$('hex').value='';renderHex()}
+function copyHex(){navigator.clipboard?.writeText($('hex').value)}
+function downloadPNG(){let a=document.createElement('a');a.download='hex-image.png';a.href=cv.toDataURL('image/png');a.click()}
+$('hex').addEventListener('input',()=>{clearTimeout(window.t);window.t=setTimeout(renderHex,150)})
+$('img').onchange=e=>{let f=e.target.files[0];if(f)$('imeta').textContent=f.name+' · '+f.size.toLocaleString()+' byte'}
+function imageToHex(){let f=$('img').files[0];if(!f)return;let im=new Image;im.onload=()=>{let max=2048,s=Math.min(1,max/im.width,max/im.height),w=Math.max(1,Math.round(im.width*s)),h=Math.max(1,Math.round(im.height*s));cv.width=w;cv.height=h;ctx.drawImage(im,0,0,w,h);let d=ctx.getImageData(0,0,w,h).data;$('w').value=w;$('h').value=h;$('fmt').value='rgba';let out=[];for(let i=0;i<d.length;i++)out.push(d[i].toString(16).padStart(2,'0').toUpperCase());$('hex').value=out.join(' ');stats([...d],w,h,4)};im.src=URL.createObjectURL(f)}
+renderHex();
+</script></main></body></html>
