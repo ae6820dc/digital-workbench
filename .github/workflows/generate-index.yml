@@ -33,6 +33,8 @@ jobs:
               for p in sorted(path.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower())):
                   if p.is_dir() and p.name in ignored_dirs:
                       continue
+                  if p == root / 'android-digital-workbench':
+                      continue
                   if p.is_file() and p.name in ignored_files and p.parent == root:
                       continue
                   if p.is_dir():
