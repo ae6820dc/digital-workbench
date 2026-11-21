@@ -56,24 +56,25 @@ jobs:
           tools="$ANDROID_HOME/build-tools/36.0.0"
           "$tools/apksigner" verify "$apk"
           metadata=$("$tools/aapt" dump badging "$apk")
-          grep -F "package: name='io.github.ae6820dc.digitalworkbench' versionCode='3' versionName='1.2'" <<< "$metadata"
+          grep -F "package: name='io.github.ae6820dc.digitalworkbench' versionCode='4' versionName='1.3'" <<< "$metadata"
           grep -Fx "application-label:'Digital Workbench'" <<< "$metadata"
           grep -Fx "targetSdkVersion:'36'" <<< "$metadata"
           grep -F "launchable-activity: name='io.github.ae6820dc.digitalworkbench.MainActivity'" <<< "$metadata"
       - name: Prepare versioned APK and compare signing certificates
         run: |
-          cp android-digital-workbench/app/build/outputs/apk/debug/app-debug.apk apk/digital-workbench-multitab-1.2.apk
+          mkdir -p apk/8
+          cp android-digital-workbench/app/build/outputs/apk/debug/app-debug.apk apk/8/digital-workbench-multitab-1.3.apk
           apksigner="$ANDROID_HOME/build-tools/36.0.0/apksigner"
           signer() {
             "$apksigner" verify --print-certs "$1" | grep -F 'certificate SHA-256 digest:'
           }
           original=$(signer apk/digital-workbench-multitab-1.1.apk)
-          current=$(signer apk/digital-workbench-multitab-1.2.apk)
+          current=$(signer apk/8/digital-workbench-multitab-1.3.apk)
           if [[ "$original" != "$current" ]]; then
             echo "::warning::APK signing certificates differ. Android will require a fresh install."
           fi
       - uses: actions/upload-artifact@v4
         with:
-          name: digital-workbench-multitab-1.2
-          path: apk/digital-workbench-multitab-1.2.apk
+          name: digital-workbench-multitab-1.3
+          path: apk/8/digital-workbench-multitab-1.3.apk
           if-no-files-found: error
